@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "RP1 Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${cwd}/build/rp1_firmware.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+            "device": "RP2040",
+            "showDevDebugOutput": true,
+            "configFiles": [
+                // "interface/jlink.cfg",
+                "interface/picoprobe.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+            "runToMain": true,
+            // Work around for stopping at main on restart
+            // "postRestartCommands": [
+            //     "break main",
+            //     "continue"
+            // ]
+        },
+        {
+            "name": "RP2 Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${cwd}/build/rp2_firmware.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+            "device": "RP2040",
+            "showDevDebugOutput": true,
+            "configFiles": [
+                // "interface/jlink.cfg",
+                "interface/picoprobe.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+            "runToMain": true,
+            // Work around for stopping at main on restart
+            // "postRestartCommands": [
+            //     "break main",
+            //     "continue"
+            // ]
+        }
+    ]
+}

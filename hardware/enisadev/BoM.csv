@@ -1,0 +1,18 @@
+"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+1;"D4,D7,D13,D10,D1,D12,D3,D5,D2,D9,D8,D15,D6,D11,D14,D16";"LED_0603_1608Metric";16;"LED";;;
+2;"R2,R1";"R_0402_1005Metric";2;"5.1k";;;
+3;"R8,R11,R12,R7";"R_0402_1005Metric";4;"10k";;;
+4;"C14,C16,C1,C13,C15,C2";"C_0402_1005Metric";6;"1uF";;;
+5;"C4,C12,C20,C3,C5,C11,C19,C28,C18,C22,C26,C21,C25,C6,C24,C17,C27,C23,C29,C30";"C_0402_1005Metric";20;"100nF";;;
+6;"C8,C9,C7,C10";"C_0402_1005Metric";4;"8pF";;;
+7;"R22,R23,R26,R21,R30,R27,R25,R16,R10,R9,R19,R24,R13,R28,R14,R20,R15,R29,R18,R17";"R_0402_1005Metric";20;"1k";;;
+8;"R4,R5,R6,R3";"R_0402_1005Metric";4;"27R";;;
+9;"SW4,SW1,SW3,SW2";"SW_SPST_TL3305A";4;"SW_Push";;;
+10;"U3,U2";"SOIC-8_5.23x5.23mm_P1.27mm";2;"W25Q32JV";;;
+11;"J2,J3";"PinHeader_1x04_P2.54mm_Vertical";2;"Conn_01x04";;;
+12;"J4";"PinHeader_2x06_P2.54mm_Vertical";1;"Conn_02x06_Odd_Even";;;
+13;"J1";"USB_C_Receptacle_HRO_TYPE-C-31-M-12";1;"USB_C_Receptacle_USB2.0";;;
+14;"U5,U4";"RP2040-QFN-56";2;"RP2040";;;
+15;"Y1,Y2";"Crystal_SMD_3225-4Pin_3.2x2.5mm";2;"Crystal_GND24";;;
+16;"U1";"SOT-23-5";1;"TLV70233_SOT23-5";;;
+17;"G***";"sigil";1;"LOGO";;;

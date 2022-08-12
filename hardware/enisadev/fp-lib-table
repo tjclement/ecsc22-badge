@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name "RP2040_minimal")(type "KiCad")(uri "${KIPRJMOD}/RP2040_minimal.pretty")(options "")(descr ""))
+  (lib (name "silkscreen")(type "KiCad")(uri "${KIPRJMOD}/silkscreen.pretty")(options "")(descr ""))
+  (lib (name "ENISA22_ArtLib")(type "KiCad")(uri "${KIPRJMOD}/ENISA22_ArtLib")(options "")(descr ""))
+)

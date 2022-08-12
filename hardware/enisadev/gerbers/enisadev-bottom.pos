@@ -1,0 +1,7 @@
+### Module positions - created on 2022 July 19, Tuesday 22:17:14 ###
+### Printed by Pcbnew version (6.0.4-0)
+## Unit = mm, Angle = deg.
+## Side : bottom
+# Ref     Val       Package                PosX       PosY       Rot  Side
+G***      LOGO      sigil              -19.1000   -21.3260    0.0000  bottom
+## End
