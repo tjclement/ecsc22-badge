@@ -27,22 +27,29 @@ add_compile_options(-Wall
 add_executable(rp1_firmware
         rp1.c
         console.c
+        uart.c
+        menu.c
+        usb_descriptors.c
+        cdc.c
+        msc_disk.c
         )
 
 add_executable(rp2_firmware
         rp2.c
         )
 
+target_include_directories(rp1_firmware PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 # pull in common dependencies
-target_link_libraries(rp1_firmware pico_stdlib)
+target_link_libraries(rp1_firmware pico_stdlib tinyusb_device tinyusb_board)
 target_link_libraries(rp2_firmware pico_stdlib)
 
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(rp1_firmware 1)
-pico_enable_stdio_uart(rp1_firmware 0)
-pico_enable_stdio_usb(rp2_firmware 1)
-pico_enable_stdio_uart(rp2_firmware 0)
+# pico_enable_stdio_usb(rp1_firmware 1)
+# pico_enable_stdio_uart(rp1_firmware 0)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(rp1_firmware)

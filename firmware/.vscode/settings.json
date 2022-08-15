@@ -21,6 +21,7 @@
     "cortex-debug.openocdPath": "${config:openocd.bin}/openocd",
     "files.associations": {
         "cstdio": "c",
-        "uart.h": "c"
+        "uart.h": "c",
+        "stdlib.h": "c"
     }
 }

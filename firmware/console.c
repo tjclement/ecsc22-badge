@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stddef.h>
 #include <stdarg.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
@@ -15,17 +17,40 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
+#define CARRIAGE_RETURN (0x0d)
+#define ESCAPE (0x1B)
+
 #define MAX_HANDLERS (16)
 #define READ_BUFFER_SIZE (4096)
 
 static char read_buffer[READ_BUFFER_SIZE];
-void (*line_handlers[MAX_HANDLERS])(char*);
-int current_depth = -1;
+static void (*input_handlers[MAX_HANDLERS])(char*);
+static int current_depth = -1;
 
-void on_uart_rx() {
+void default_handler(char *input) {
+    if (strnstr(input, "\033[", 3) != NULL) {
+        // Don't print ANSI escape codes
+        return;
+    }
+
+    printf("%s", input);
+
+    // Convert \r to \r\n
+    int len = strlen(input);
+    if (input[len-1] == CARRIAGE_RETURN) {
+        printf("\n");
+    }
+}
+
+void console_setup() {
+    current_depth = 0;
+    input_handlers[current_depth] = default_handler;
+}
+
+void console_task() {
     int chars_read = 0;
-    while (uart_is_readable_within_us(UART_ID, 500)) {
-        uint8_t ch = uart_getc(UART_ID);
+    int ch;
+    while ((ch = getchar_timeout_us(1000)) != PICO_ERROR_TIMEOUT) {
         read_buffer[chars_read++] = (char) ch;
     }
     read_buffer[chars_read] = '\0';
@@ -33,44 +58,12 @@ void on_uart_rx() {
     bool data_read = (read_buffer[0] != '\0' || chars_read > 1);
 
     if (data_read && current_depth >= 0) {
-        line_handlers[current_depth](read_buffer);
+        input_handlers[current_depth](read_buffer);
     }
 }
 
-void console_init() {
-    // Set up our UART with a basic baud rate.
-    uart_init(UART_ID, 115200);
-
-    // Set the TX and RX pins by using the function select on the GPIO
-    // Set datasheet for more information on function select
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-
-    // Actually, we want a different speed
-    // The call will return the actual baud rate selected, which will be as close as
-    // possible to that requested
-    int __unused actual = uart_set_baudrate(UART_ID, BAUD_RATE);
-
-    // Set UART flow control CTS/RTS, we don't want these, so turn them off
-    uart_set_hw_flow(UART_ID, false, false);
-
-    // Set our data format
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-
-    // Turn off FIFO's - we want to do this character by character
-    // uart_set_fifo_enabled(UART_ID, false);
-
-    // Set up a RX interrupt
-    // We need to set up the handler first
-    // Select correct interrupt for the UART we are using
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
-
-    // And set up and enable the interrupt handlers
-    irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
-    irq_set_enabled(UART_IRQ, true);
-
-    // Now enable the UART to send interrupts - RX only
-    uart_set_irq_enables(UART_ID, true, false);
+void console_clear() {
+    printf("\033[H\033[2J");
 }
 
 void console_printf(const char* format, ...) {
@@ -82,9 +75,12 @@ void console_printf(const char* format, ...) {
 
 void console_push_handler(void (*handler)(char*)) {
     current_depth += 1;
-    line_handlers[current_depth] = handler;
+    input_handlers[current_depth] = handler;
 }
 
-void reset_handler() {
-
+void console_pop_handler() {
+    if (current_depth < 0) { return; }
+    
+    input_handlers[current_depth] = NULL;
+    current_depth -= 1;
 }
