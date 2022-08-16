@@ -11,7 +11,7 @@ void menu_render() {
     if (cur_menu == NULL) { return; }
     
     console_clear();
-    console_printf("\033[H\033[2J%s (%d)\r\n\r\n", cur_menu->instructions, cur_menu->cur_index);
+    console_printf("\033[H\033[2J%s\r\n\r\n", cur_menu->instructions);
 
     for (int i = 0; i < cur_menu->num_names; i++) {
         if (i == cur_menu->cur_index) {
@@ -27,9 +27,9 @@ void menu_input_handler(char *input) {
 
     if (strstr(input, "\r") != NULL || strstr(input, "\n") != NULL) {
         // Enter key pressed
+        console_pop_handler();
         console_clear();
         cur_menu->callback(cur_menu->cur_index);
-        console_pop_handler();
         cur_menu = NULL;
         return;
     } else if (strnstr(input, "\033[B", 3) != NULL) {

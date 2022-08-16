@@ -32,10 +32,13 @@ add_executable(rp1_firmware
         usb_descriptors.c
         cdc.c
         msc_disk.c
+        challs/chall1.c
         )
 
 add_executable(rp2_firmware
         rp2.c
+        uart.c
+        nvs.c
         )
 
 target_include_directories(rp1_firmware PUBLIC
@@ -44,7 +47,7 @@ target_include_directories(rp1_firmware PUBLIC
 
 # pull in common dependencies
 target_link_libraries(rp1_firmware pico_stdlib tinyusb_device tinyusb_board)
-target_link_libraries(rp2_firmware pico_stdlib)
+target_link_libraries(rp2_firmware pico_stdlib hardware_flash)
 
 
 # enable usb output, disable uart output

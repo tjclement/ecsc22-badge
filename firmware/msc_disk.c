@@ -42,6 +42,19 @@ static bool ejected = false;
 "The 4 Knowledge Vault modules attached to this device contain some critical blueprints that are needed to revive a global civilisation. To keep this information out of the hands of malicious parties, vault contents are protected from access by security measures.\r\n\r\n" \
 "We hope with all might that you succeed in unlocking all vaults, and give mankind a second chance to thrive."
 
+#define CHALL1_CONTENTS \
+"void unlock() { \r\n" \
+"    volatile bool success = false; \r\n" \
+"    if (!success) { \r\n" \
+"        console_printf(\"Refusing to continue\\n\"); \r\n" \
+"        return; \r\n" \
+"    } else { \r\n" \
+"        console_printf(\"Requesting TPM to unlock vault\\\n\"); \r\n" \
+"        // Communication with TPM happens here \r\n" \
+"        // [..] \r\n" \
+"    } \r\n" \
+"} \r\n"
+
 #define FILESIZE(a) FILESIZE_(a)
 #define FILESIZE_(a) \
   (sizeof(a)-1) & 0xFF, ((sizeof(a)-1) & 0xFF00) >> 8, ((sizeof(a)-1) & 0xFF0000) >> 16, ((sizeof(a)-1) & 0xFF00) >> 24
@@ -123,7 +136,7 @@ uint8_t msc_disk[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
       // third entry is readme file again
       'C' , 'H' , 'A' , 'L' , 'L' , '_' , '1' , ' ' , 'C' , ' ' , ' ' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
       0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x04, 0x00,
-      FILESIZE(README_CONTENTS), // readme's files size (4 Bytes)
+      FILESIZE(CHALL1_CONTENTS), // readme's files size (4 Bytes)
       // fourth entry is readme file again
       'C' , 'H' , 'A' , 'L' , 'L' , '_' , '3' , ' ' , 'C' , ' ' , ' ' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
       0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x06, 0x00,
@@ -133,7 +146,7 @@ uint8_t msc_disk[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
 
 void msc_init() {
   memcpy(&msc_disk[3], README_CONTENTS, sizeof(README_CONTENTS));
-  memcpy(&msc_disk[5], README_CONTENTS, sizeof(README_CONTENTS));
+  memcpy(&msc_disk[5], CHALL1_CONTENTS, sizeof(CHALL1_CONTENTS));
   memcpy(&msc_disk[7], README_CONTENTS, sizeof(README_CONTENTS));
   return;
 }

@@ -5,18 +5,16 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 
+#include "nvs.h"
+#include "uart.h"
+
 
 /// \tag::uart_advanced[]
-
-#define UART_ID uart0
-#define BAUD_RATE 115200
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
 
 // We are using pins 0 and 1, but see the GPIO function select table in the
 // datasheet for information on which other pins can be used.
@@ -25,18 +23,15 @@
 
 #define LED_PIN (25)
 
-static int chars_rxed = 0;
+static uint8_t got_flags[4] = {0,0,0,0};
 
-// RX interrupt handler
-void on_uart_rx() {
-    while (uart_is_readable(UART_ID)) {
-        uint8_t ch = uart_getc(UART_ID);
-        // Can we send it back?
-        if (uart_is_writable(UART_ID)) {
-            // uart_putc(UART_ID, ch);
-            printf("%c", ch);
-        }
-        chars_rxed++;
+void uart_handler(char *input) {
+    uart_printf("%s", input);
+    if (strnstr(input, "c", 3)) {
+        *((int*)got_flags) = 0x01010101;
+        nvs_write(0, got_flags, 4);
+        nvs_read(0, got_flags, 4);
+        uart_printf("Flags: %p", *(int*)(got_flags));
     }
 }
 
@@ -47,44 +42,13 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 1);
 
-    // Set up our UART with a basic baud rate.
-    uart_init(UART_ID, 115200);
+    uart_setup();
+    uart_push_handler(uart_handler);
 
-    // Set the TX and RX pins by using the function select on the GPIO
-    // Set datasheet for more information on function select
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+    nvs_read(0, got_flags, 4);
+    uart_printf("Flags: %p", *(int*)(got_flags));
 
-    // Actually, we want a different speed
-    // The call will return the actual baud rate selected, which will be as close as
-    // possible to that requested
-    int __unused actual = uart_set_baudrate(UART_ID, BAUD_RATE);
-
-    // Set UART flow control CTS/RTS, we don't want these, so turn them off
-    uart_set_hw_flow(UART_ID, false, false);
-
-    // Set our data format
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-
-    // Turn off FIFO's - we want to do this character by character
-    uart_set_fifo_enabled(UART_ID, false);
-
-    // Set up a RX interrupt
-    // We need to set up the handler first
-    // Select correct interrupt for the UART we are using
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
-
-    // And set up and enable the interrupt handlers
-    irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
-    irq_set_enabled(UART_IRQ, true);
-
-    // Now enable the UART to send interrupts - RX only
-    uart_set_irq_enables(UART_ID, true, false);
-
-    // OK, all set up.
-    // Lets send a basic string out, and then run a loop and wait for RX interrupts
-    // The handler will count them, but also reflect the incoming data back with a slight change!
-    uart_puts(UART_ID, "\nHello, uart interrupts\n");
+    uart_printf("\nTPM bootrom B2 version\n");
 
     while (1) {
         tight_loop_contents();

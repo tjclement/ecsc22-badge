@@ -20,6 +20,8 @@
 #include "uart.h"
 #include "menu.h"
 
+#include "challs/chall1.h"
+
 #define STATUS_PIN (26)
 #define MOUNT_PIN (27)
 #define CONN_PIN (28)
@@ -53,11 +55,22 @@ enum  {
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 void parrot_uart(char *input) {
-    printf("Got input: %s", input);
+    printf("Got input from TPM: %s", input);
 }
 
 void menu_handler(int chosen_index) {
-    printf("Chosen: %d", chosen_index);
+    switch (chosen_index+1) {
+      case 1:
+        console_printf("Starting chall 1\n");
+        chall1();
+      break;
+      case 2:
+        console_printf("Setting flags\n");
+        uart_printf("c");
+      break;
+      default:
+      break;
+    }
 }
 
 void cdc_connect_handler(bool connected) {
@@ -115,7 +128,7 @@ int main() {
         .callback = menu_handler,
         .cur_index = 0
     };
-    
+
     menu(&menu_info);
 
     while (1) {

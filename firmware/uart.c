@@ -79,6 +79,7 @@ void uart_printf(const char* format, ...) {
     char buffer[BUFFER_SIZE];
     vsnprintf(buffer, BUFFER_SIZE-1, format, args);
     va_end(args);
+    uart_puts(UART_ID, buffer);
 }
 
 void uart_push_handler(void (*handler)(char*)) {
