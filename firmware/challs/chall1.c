@@ -3,6 +3,7 @@
 #include "console.h"
 #include "uart.h"
 
+__attribute__ ((optimize(0)))
 static void unlock() {
     volatile bool success = false;
     if (!success) {
