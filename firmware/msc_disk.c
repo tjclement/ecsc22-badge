@@ -39,7 +39,7 @@ static bool ejected = false;
 "=== To all survivors ===\r\n\r\n" \
 "If you're reading this, it means that we have succeeded against all odds in preserving mankind's most important knowledge for those who come after us.\r\n" \
 "Unfortunately, it also means that as we expected society as we know it has collapsed. We've had it a long time coming, I'm afraid.\r\n\r\n" \
-"The four Knowledge Vault modules attached to this device contain some critical blueprints that are needed to revive a global civilisation. To keep this information out of the hands of malicious parties, vault contents are protected from access by security measures.\r\n\r\n" \
+"The four Knowledge Vault modules attached to this device contain some critical blueprints that are needed to revive a global civilisation. To keep this information out of the hands of malicious parties, vault contents are protected from access by security measures running on a separate TPM chip.\r\n\r\n" \
 "We hope with all might that you succeed in unlocking all vaults, and give mankind a second chance to thrive.\r\n\r\n" \
 "You can connect to the main interface via serial over USB using baudrate 115200."
 
