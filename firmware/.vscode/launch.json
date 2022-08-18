@@ -12,17 +12,11 @@
             "device": "RP2040",
             "showDevDebugOutput": true,
             "configFiles": [
-                // "interface/jlink.cfg",
                 "interface/picoprobe.cfg",
                 "target/rp2040.cfg"
             ],
             "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
-            "runToMain": true,
-            // Work around for stopping at main on restart
-            // "postRestartCommands": [
-            //     "break main",
-            //     "continue"
-            // ]
+            "runToMain": true
         },
         {
             "name": "RP2 Debug",
@@ -35,17 +29,28 @@
             "device": "RP2040",
             "showDevDebugOutput": true,
             "configFiles": [
-                // "interface/jlink.cfg",
                 "interface/picoprobe.cfg",
                 "target/rp2040.cfg"
             ],
             "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
-            "runToMain": true,
-            // Work around for stopping at main on restart
-            // "postRestartCommands": [
-            //     "break main",
-            //     "continue"
-            // ]
+            "runToMain": true
+        }
+        {
+            "name": "Blinky",
+            "cwd": "${workspaceRoot}",
+            "executable": "${cwd}/build/rp_test.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+            "device": "RP2040",
+            "showDevDebugOutput": true,
+            "configFiles": [
+                "interface/picoprobe.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+            "runToMain": true
         }
     ]
 }

@@ -39,7 +39,7 @@ static bool ejected = false;
 "=== To all survivors ===\r\n\r\n" \
 "If you're reading this, it means that we have succeeded against all odds in preserving mankind's most important knowledge for those who come after us.\r\n" \
 "Unfortunately, it also means that as we expected society as we know it has collapsed. We've had it a long time coming, I'm afraid.\r\n\r\n" \
-"The 4 Knowledge Vault modules attached to this device contain some critical blueprints that are needed to revive a global civilisation. To keep this information out of the hands of malicious parties, vault contents are protected from access by security measures.\r\n\r\n" \
+"The four Knowledge Vault modules attached to this device contain some critical blueprints that are needed to revive a global civilisation. To keep this information out of the hands of malicious parties, vault contents are protected from access by security measures.\r\n\r\n" \
 "We hope with all might that you succeed in unlocking all vaults, and give mankind a second chance to thrive."
 
 #define CHALL1_CONTENTS \
@@ -49,7 +49,7 @@ static bool ejected = false;
 "        console_printf(\"Refusing to continue\\n\"); \r\n" \
 "        return; \r\n" \
 "    } else { \r\n" \
-"        console_printf(\"Requesting TPM to unlock vault\\\n\"); \r\n" \
+"        console_printf(\"Requesting TPM to unlock vault\\n\"); \r\n" \
 "        // Communication with TPM happens here \r\n" \
 "        // [..] \r\n" \
 "    } \r\n" \

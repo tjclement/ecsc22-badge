@@ -33,12 +33,20 @@ add_executable(rp1_firmware
         cdc.c
         msc_disk.c
         challs/chall1.c
+        challs/chall2.c
+        challs/chall3.c
+        challs/chall4.c
         )
 
 add_executable(rp2_firmware
         rp2.c
         uart.c
         nvs.c
+        )
+
+
+add_executable(rp_test
+        rp_test.c
         )
 
 target_include_directories(rp1_firmware PUBLIC
@@ -48,6 +56,7 @@ target_include_directories(rp1_firmware PUBLIC
 # pull in common dependencies
 target_link_libraries(rp1_firmware pico_stdlib tinyusb_device tinyusb_board)
 target_link_libraries(rp2_firmware pico_stdlib hardware_flash)
+target_link_libraries(rp_test pico_stdlib)
 
 
 # enable usb output, disable uart output
@@ -57,8 +66,9 @@ target_link_libraries(rp2_firmware pico_stdlib hardware_flash)
 # create map/bin/hex file etc.
 pico_add_extra_outputs(rp1_firmware)
 pico_add_extra_outputs(rp2_firmware)
+pico_add_extra_outputs(rp_test)
 
 # add url via pico_set_program_url
 example_auto_set_url(rp1_firmware)
-example_auto_set_url(rp2_firmware)
+example_auto_set_url(rp_test)
 

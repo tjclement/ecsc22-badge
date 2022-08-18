@@ -21,6 +21,9 @@
 #include "menu.h"
 
 #include "challs/chall1.h"
+#include "challs/chall2.h"
+#include "challs/chall3.h"
+#include "challs/chall4.h"
 
 #define STATUS_PIN (26)
 #define MOUNT_PIN (27)
@@ -55,18 +58,30 @@ enum  {
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 void parrot_uart(char *input) {
-    printf("Got input from TPM: %s", input);
+    console_printf("Got input from TPM: %s", input);
 }
 
 void menu_handler(int chosen_index) {
     switch (chosen_index+1) {
       case 1:
-        console_printf("Starting chall 1\n");
         chall1();
       break;
       case 2:
+        chall2();
+      break;
+      case 3:
+        chall3();
+      break;
+      case 4:
+        chall4();
+      break;
+      case 5:
         console_printf("Setting flags\n");
         uart_printf("c");
+      break;
+      case 6:
+        console_printf("Resetting flags\n");
+        uart_printf("r");
       break;
       default:
       break;
@@ -92,7 +107,7 @@ void led_blinking_task(void)
   led_state = 1 - led_state; // toggle
 }
 
-int main() {    
+int main() {
     uart_setup();
     uart_push_handler(parrot_uart);
 
@@ -116,7 +131,9 @@ int main() {
         "Vault 1 - Water Purification", 
         "Vault 2 - Supercomputing Architecture", 
         "Vault 3 - Wireless Communication", 
-        "Vault 4 - Power Generation"};
+        "Vault 4 - Power Generation", 
+        "Cheat: set flags", 
+        "Cheat: reset flags"};
 
     menu_t menu_info = {
         .instructions = \
@@ -124,7 +141,7 @@ int main() {
         "\r\nYou hold in your hands the knowledge to rebuild a globalised civilisation, stored in protected vaults.\r\n" \
         " Choose a Knowledge Vault to interface with:",
         .names = names,
-        .num_names = 4,
+        .num_names = sizeof(names) / sizeof(char*),
         .callback = menu_handler,
         .cur_index = 0
     };

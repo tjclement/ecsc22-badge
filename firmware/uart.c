@@ -3,8 +3,8 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
+#include "uart.h"
 
-#define UART_ID uart0
 #define BAUD_RATE 115200
 #define DATA_BITS 8
 #define STOP_BITS 1
@@ -51,8 +51,7 @@ void uart_setup() {
     // possible to that requested
     int __unused actual = uart_set_baudrate(UART_ID, BAUD_RATE);
 
-    // Set UART flow control CTS/RTS, we don't want these, so turn them off
-    uart_set_hw_flow(UART_ID, false, false);
+    uart_set_hw_flow(UART_ID, true, true);
 
     // Set our data format
     uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
@@ -80,6 +79,10 @@ void uart_printf(const char* format, ...) {
     vsnprintf(buffer, BUFFER_SIZE-1, format, args);
     va_end(args);
     uart_puts(UART_ID, buffer);
+}
+
+void uart_write(uint8_t* data, unsigned int length) {
+    uart_write_blocking(UART_ID, data, length);
 }
 
 void uart_push_handler(void (*handler)(char*)) {

@@ -23,6 +23,8 @@
         "cstdio": "c",
         "uart.h": "c",
         "stdlib.h": "c",
-        "console.h": "c"
+        "console.h": "c",
+        "chall1.h": "c",
+        "msc_disk.h": "c"
     }
 }
