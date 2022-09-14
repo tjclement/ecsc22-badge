@@ -25,6 +25,13 @@
         "stdlib.h": "c",
         "console.h": "c",
         "chall1.h": "c",
-        "msc_disk.h": "c"
-    }
+        "msc_disk.h": "c",
+        "malloc.h": "c",
+        "stdarg.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "board.h": "c",
+        "CHALL_3.C": "cpp"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

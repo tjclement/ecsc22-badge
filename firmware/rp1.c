@@ -57,8 +57,11 @@ enum  {
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
-void parrot_uart(char *input) {
-    console_printf("Got input from TPM: %s", input);
+void parrot_uart(char *input, int len) {
+    puts("From TPM: ");
+    for (int i = 0; i < len; i++) {
+      putchar(input[i]);
+    }
 }
 
 void menu_handler(int chosen_index) {
@@ -76,13 +79,20 @@ void menu_handler(int chosen_index) {
         chall4();
       break;
       case 5:
-        console_printf("Setting flags\n");
-        uart_printf("c");
+        uart_printf("dflags");
       break;
-      case 6:
+      /*case 6:
+        console_printf("Setting flags\n");
+        uart_printf("cgibflagsbls");
+      break;
+      case 7:
         console_printf("Resetting flags\n");
         uart_printf("r");
       break;
+      case 8:
+        console_printf("Rebooting into USB bootloader mode\n");
+        uart_printf("fgibusbpl0x");
+      break;*/
       default:
       break;
     }
@@ -132,8 +142,10 @@ int main() {
         "Vault 2 - Supercomputing Architecture", 
         "Vault 3 - Wireless Communication", 
         "Vault 4 - Power Generation", 
+        "[Print flags]"/*, 
         "Cheat: set flags", 
-        "Cheat: reset flags"};
+        "Cheat: reset flags", 
+        "Cheat: Reboot TPM into USB bootloader"*/};
 
     menu_t menu_info = {
         .instructions = \
@@ -152,6 +164,7 @@ int main() {
         tud_task();
         led_blinking_task();
         console_task();
+        uart_task();
     }
 }
 

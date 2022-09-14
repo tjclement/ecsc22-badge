@@ -42,6 +42,7 @@ add_executable(rp2_firmware
         rp2.c
         uart.c
         nvs.c
+        interpolator.c
         )
 
 
@@ -55,7 +56,7 @@ target_include_directories(rp1_firmware PUBLIC
 
 # pull in common dependencies
 target_link_libraries(rp1_firmware pico_stdlib tinyusb_device tinyusb_board)
-target_link_libraries(rp2_firmware pico_stdlib hardware_flash)
+target_link_libraries(rp2_firmware pico_stdlib hardware_flash hardware_interp)
 target_link_libraries(rp_test pico_stdlib)
 
 

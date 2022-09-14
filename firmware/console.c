@@ -6,28 +6,14 @@
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 
-#define UART_ID uart0
-#define BAUD_RATE 115200
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
-
-// We are using pins 0 and 1, but see the GPIO function select table in the
-// datasheet for information on which other pins can be used.
-#define UART_TX_PIN 0
-#define UART_RX_PIN 1
-
-#define CARRIAGE_RETURN (0x0d)
-#define ESCAPE (0x1B)
-
-#define MAX_HANDLERS (16)
-#define READ_BUFFER_SIZE (4096)
+#include "console.h"
 
 static char read_buffer[READ_BUFFER_SIZE];
-static void (*input_handlers[MAX_HANDLERS])(char*);
+static int cur_write_index = 0;
+static console_handler_t input_handlers[MAX_HANDLERS];
 static int current_depth = -1;
 
-void default_handler(char *input) {
+void default_handler(char *input, int len) {
     if (strnstr(input, "\033[", 3) != NULL) {
         // Don't print ANSI escape codes
         return;
@@ -36,30 +22,46 @@ void default_handler(char *input) {
     printf("%s", input);
 
     // Convert \r to \r\n
-    int len = strlen(input);
     if (input[len-1] == CARRIAGE_RETURN) {
         printf("\n");
     }
 }
 
+console_handler_t default_handler_struct = {
+    default_handler,
+    .wait_for_newline = false
+};
+
 void console_setup() {
     current_depth = 0;
-    input_handlers[current_depth] = default_handler;
+    input_handlers[current_depth] = default_handler_struct;
 }
 
 void console_task() {
-    int chars_read = 0;
     int ch;
-    while ((ch = getchar_timeout_us(1000)) != PICO_ERROR_TIMEOUT) {
-        read_buffer[chars_read++] = (char) ch;
-    }
-    read_buffer[chars_read] = '\0';
+    int chars_read = 0;
 
-    bool data_read = (read_buffer[0] != '\0' || chars_read > 1);
-
-    if (data_read && current_depth >= 0) {
-        input_handlers[current_depth](read_buffer);
+    if (current_depth < 0) { 
+        return;
     }
+
+    console_handler_t handler = input_handlers[current_depth];
+
+    while ((ch = getchar_timeout_us(500)) != PICO_ERROR_TIMEOUT) {
+        read_buffer[cur_write_index++] = (char) ch;
+        chars_read++;
+        if (handler.echo_input) {
+            putchar(ch);
+        }
+    }
+
+    if ((handler.wait_for_newline && (read_buffer[cur_write_index-1] != CARRIAGE_RETURN && read_buffer[cur_write_index-1] != NEWLINE && read_buffer[cur_write_index-1] != CTRL_C)) || chars_read <= 0) {
+        return;
+    }
+
+    read_buffer[cur_write_index] = '\0';
+    handler.callback(read_buffer, cur_write_index);
+    cur_write_index = 0;
 }
 
 void console_clear() {
@@ -73,14 +75,12 @@ void console_printf(const char* format, ...) {
     va_end(args);
 }
 
-void console_push_handler(void (*handler)(char*)) {
+void console_push_handler(console_handler_t handler) {
     current_depth += 1;
     input_handlers[current_depth] = handler;
 }
 
 void console_pop_handler() {
     if (current_depth < 0) { return; }
-    
-    input_handlers[current_depth] = NULL;
     current_depth -= 1;
 }

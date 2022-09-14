@@ -22,7 +22,7 @@ void menu_render() {
     }
 }
 
-void menu_input_handler(char *input) {
+void menu_input_handler(char *input, int len) {
     if (cur_menu == NULL) { return; }
 
     if (strstr(input, "\r") != NULL || strstr(input, "\n") != NULL) {
@@ -43,8 +43,15 @@ void menu_input_handler(char *input) {
     menu_render();
 }
 
+
+static console_handler_t console_handler = {
+    menu_input_handler,
+    .echo_input = false,
+    .wait_for_newline = false
+};
+
 void menu(menu_t *menu_info) {
     cur_menu = menu_info;
     cur_menu->cur_index = 0;
-    console_push_handler(menu_input_handler);
+    console_push_handler(console_handler);
 }

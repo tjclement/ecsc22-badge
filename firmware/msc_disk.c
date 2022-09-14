@@ -56,6 +56,138 @@ static bool ejected = false;
 "    } \r\n" \
 "} \r\n"
 
+#define CHALL3_CONTENTS \
+"static char chall3_hash[] = {\r\n" \
+"    0xca, 0xec, 0x1d, 0x1a, 0xe7, 0x9d, 0x2c, 0x50,\r\n" \
+"    0x21, 0x5c, 0x17, 0x14, 0x74, 0x17, 0xe8, 0xd8,\r\n" \
+"    0xa3, 0x6c, 0x17, 0x8b, 0xb7, 0x83, 0xe6, 0xc0,\r\n" \
+"    0x01, 0x65, 0x06, 0xda, 0x95, 0x55, 0xd3, 0x26,\r\n" \
+"    0x10, 0x7a, 0x50, 0xac, 0x50, 0x58, 0xad, 0x0b,\r\n" \
+"    0x44, 0xa9, 0x25, 0xa4, 0x11, 0x58, 0x64, 0x21,\r\n" \
+"    0x7b, 0x5e, 0xb5, 0x6b, 0x6c, 0xa4, 0xfe, 0x66,\r\n" \
+"    0xc8, 0x10, 0x29, 0xff, 0x7d, 0x8f, 0x20, 0x1c \r\n" \
+"};\r\n" \
+"\r\n" \
+"void keygen(uint8_t * key) {\r\n" \
+"    interp_config cfg = interp_default_config();\r\n" \
+"    interp_set_config(interp0, 1, &cfg);\r\n" \
+"    interp_config_set_blend(&cfg, true);\r\n" \
+"    interp_set_config(interp0, 0, &cfg);\r\n" \
+"\r\n" \
+"    interp0->base[0] = *((uint32_t *)0x61);\r\n" \
+"    interp0->base[1] = *((uint32_t *)0x61 + 1);\r\n" \
+"\r\n" \
+"    for(int i = 0; i < 64; i++) {\r\n" \
+"        interp0->accum[1] = 255 * i / 64;\r\n" \
+"        uint32_t *div = (uint32_t *)&(interp0->peek[1]);\r\n" \
+"        uint8_t *b = (uint8_t*)(div);\r\n" \
+"        key[i] = b[0] + b[1] + b[2] + b[3];\r\n" \
+"    }\r\n" \
+"}\r\n" \
+"\r\n" \
+"void interpolarize(io_rw_32 accum0, io_rw_32 base0, io_rw_32 accum1, io_rw_32 base1) {\r\n" \
+"    interp_config cfg = interp_default_config();\r\n" \
+"    interp_set_config(interp0, 0, &cfg);\r\n" \
+"    interp_set_config(interp0, 1, &cfg);\r\n" \
+"    \r\n" \
+"    interp_set_config(interp1, 0, &cfg);\r\n" \
+"    interp_set_config(interp1, 1, &cfg);\r\n" \
+"    \r\n" \
+"    interp0->accum[0] = accum0;\r\n" \
+"    interp0->base[0] = base0;\r\n" \
+"    interp0->accum[1] = accum1;\r\n" \
+"    interp0->base[1] = base1;\r\n" \
+"\r\n" \
+"    for(int i = 0; i < 63; i++) {\r\n" \
+"        uint8_t *refa = (uint8_t*)(interp0->peek[0]);\r\n" \
+"        uint8_t *refb = (uint8_t*)(interp0->pop[1]);\r\n" \
+"        \r\n" \
+"        interp1->accum[0] = *refa;\r\n" \
+"        interp1->accum[1] = *refb;\r\n" \
+"        \r\n" \
+"        *refa = interp1->pop[2];\r\n" \
+"    }\r\n" \
+"}\r\n" \
+"\r\n" \
+"void hash(uint8_t *key, const char *input, uint8_t *output) {\r\n" \
+"    int len = strlen(input);\r\n" \
+"    memcpy(output, input, 64);\r\n" \
+"    memset(&output[len], 64-len, 64-len);\r\n" \
+"    \r\n" \
+"    interpolarize((io_rw_32)(output-1), 1, (io_rw_32)(key-1), 1);    \r\n" \
+"    interpolarize((io_rw_32)output, 1, (io_rw_32)(output-1), 1);\r\n" \
+"    interpolarize((io_rw_32)(output+63), -1, (io_rw_32)(output+64), -1);\r\n" \
+"}\r\n" \
+"\r\n" \
+"void chall3_handler(char *input, int len) {\r\n" \
+"    char key[64];\r\n" \
+"    char output[64];\r\n" \
+"\r\n" \
+"    if (input[len-2] == CARRIAGE_RETURN) { \r\n" \
+"        input[len-2] = '\0';\r\n" \
+"        len -= 2;\r\n" \
+"    } else if (input[len-1] == CARRIAGE_RETURN || input[len-1] == NEWLINE) {\r\n" \
+"        input[len-1] = '\0';\r\n" \
+"        len -= 1;\r\n" \
+"    }\r\n" \
+"\r\n" \
+"    if (len <= 0 || len >= (64)) {\r\n" \
+"        uart_printf(\"Input needs to > 0 and < 64 characters\\r\\n\");\r\n" \
+"        return;\r\n" \
+"    }\r\n" \
+"\r\n" \
+"    keygen(key);\r\n" \
+"    hash(key, input, output);\r\n" \
+"       \r\n" \
+"    if (memcmp(output, chall3_hash, 64) == 0) {\r\n" \
+"        uart_printf(\"Winner winner\\r\\n\");\r\n" \
+"    } else {\r\n" \
+"        uart_printf(\"Nope.\\r\\n\");\r\n" \
+"     return;\r\n" \
+"    }\r\n" \
+"\r\n" \
+"    // [..] successfully unlocked\r\n" \
+"}\r\n" \
+
+#define CHALL4_CONTENTS \
+"void unlock(int key) {\r\n" \
+"    uart_printf(\"Unlock function located at 0x%p\\r\\n\", unlock);\r\n" \
+"\r\n" \
+"    if(key != 42) { uart_printf(\"Wrong key\\r\\n\"); return; }\r\n" \
+"    char flag[48] = {0};\r\n" \
+"\r\n" \
+"    if(key != 42) { uart_printf(\"Wrong key\\r\\n\"); return; }\r\n" \
+"\r\n" \
+"    //[..]\r\n" \
+"\r\n" \
+"    if(key != 42) { uart_printf(\"Wrong key\\r\\n\"); return; }\r\n" \
+"    uart_printf(\"Unlocked vault: %s\\r\\n\", flag);\r\n" \
+"}\r\n\r\n" \
+"void chall4_handler(char *input, int len) {\r\n" \
+"    char cmd[8];\r\n" \
+"    memcpy(cmd, input, len);\r\n" \
+"\r\n" \
+"    if (strnstr(cmd, \"VERSION\", 8) != 0) {\r\n" \
+"        version();\r\n" \
+"        return;\r\n" \
+"    } else if (strnstr(cmd, \"REGS\", 8) != 0) {\r\n" \
+"        regs();\r\n" \
+"        return;\r\n" \
+"    } else if (strnstr(cmd, \"CLOCK\", 8) != 0) {\r\n" \
+"        clock();\r\n" \
+"        return;\r\n" \
+"    } else if (strnstr(cmd, \"UNLOCK\", 8) != 0) {\r\n" \
+"        unlock(0);\r\n" \
+"        return;\r\n" \
+"    } else if (strnstr(cmd, \"HELP\", 8) != 0) {\r\n" \
+"        help_chall4();\r\n" \
+"        return;\r\n" \
+"    } else {\r\n" \
+"        uart_printf(\"Unknown command\\r\\n\");\r\n" \
+"    }\r\n" \
+"    return;\r\n" \
+"}\r\n" \
+
 #define FILESIZE(a) FILESIZE_(a)
 #define FILESIZE_(a) \
   (sizeof(a)-1) & 0xFF, ((sizeof(a)-1) & 0xFF00) >> 8, ((sizeof(a)-1) & 0xFF0000) >> 16, ((sizeof(a)-1) & 0xFF00) >> 24
@@ -122,7 +254,13 @@ uint8_t msc_disk[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
   {
     // first 2 entries must be F8FF, entry at index 0x02 is next cluster of readme file (0x03),
     // and entry at 0x03 marks end of file (0xFF8). Rinse and repeat for following files.
-      0xF8, 0xFF, 0xFF, 0x03, 0x80, 0xFF, 0x05, 0x80, 0xFF, 0x07, 0x80, 0xFF // 
+      0xF8, 0xFF, 0xFF, // cluster 0 and 1
+      0x03, 0x80, 0xFF, // 2 and 3
+      0x05, 0x80, 0xFF, // 4 and 5
+      0x07, 0x80, 0x00, // 6 and 7
+      0x09, 0xA0, 0x00, // 8 and 9
+      0x0B, 0x80, 0xFF, // 10 and 11
+      0x0D, 0x80, 0xFF, // 12 and 13
   },
 
   //------------- Block2: Root Directory -------------//
@@ -130,25 +268,30 @@ uint8_t msc_disk[DISK_BLOCK_NUM][DISK_BLOCK_SIZE] =
       // first entry is volume label
       'E' , 'C' , 'S' , 'C' , ' ' , '2' , '0' , '2' , '2' , ' ' , ' ' , 0x08, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4F, 0x6D, 0x65, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      // second entry is readme file
+      
       'R' , 'E' , 'A' , 'D' , 'M' , 'E' , ' ' , ' ' , 'T' , 'X' , 'T' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
       0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x02, 0x00,
       FILESIZE(README_CONTENTS), // readme's files size (4 Bytes)
-      // third entry is readme file again
+      
       'C' , 'H' , 'A' , 'L' , 'L' , '_' , '1' , ' ' , 'C' , ' ' , ' ' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
       0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x04, 0x00,
-      FILESIZE(CHALL1_CONTENTS), // readme's files size (4 Bytes)
-      // fourth entry is readme file again
+      FILESIZE(CHALL1_CONTENTS),
+      
       'C' , 'H' , 'A' , 'L' , 'L' , '_' , '3' , ' ' , 'C' , ' ' , ' ' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
       0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x06, 0x00,
-      FILESIZE(README_CONTENTS) // readme's files size (4 Bytes)
+      FILESIZE(CHALL3_CONTENTS),
+      
+      'C' , 'H' , 'A' , 'L' , 'L' , '_' , '4' , ' ' , 'C' , ' ' , ' ' , 0x20, 0x00, 0xC6, 0x52, 0x6D,
+      0x65, 0x43, 0x65, 0x43, 0x00, 0x00, 0x88, 0x6D, 0x65, 0x43, 0x0C, 0x00,
+      FILESIZE(CHALL4_CONTENTS)
   }
 };
 
 void msc_init() {
   memcpy(&msc_disk[3], README_CONTENTS, sizeof(README_CONTENTS));
   memcpy(&msc_disk[5], CHALL1_CONTENTS, sizeof(CHALL1_CONTENTS));
-  memcpy(&msc_disk[7], README_CONTENTS, sizeof(README_CONTENTS));
+  memcpy(&msc_disk[7], CHALL3_CONTENTS, sizeof(CHALL3_CONTENTS));
+  memcpy(&msc_disk[13], CHALL4_CONTENTS, sizeof(CHALL4_CONTENTS));
   return;
 }
 

@@ -7,14 +7,14 @@
 
 static bool is_active = false;
 
-static void uart_handler(char *input) {
+static void uart_handler(char *input, int len) {
     int input_size = strnlen(input, 1024);
     char buffer[input_size + 1 + 4];
     sprintf(buffer, "ERR: %s", input);
     tud_vendor_write_str(input);
 }
 
-static void chall2_input_handler(char *input) {
+static void chall2_input_handler(char *input, int len) {
     if (input[0] == CTRL_C) {
         watchdog_reboot(0, 0, 0);
     }
@@ -35,10 +35,16 @@ void tud_vendor_rx_cb(uint8_t itf) {
     uart_write((uint8_t*) cmd, sizeof(cmd));
 }
 
+static console_handler_t console_handler = {
+    chall2_input_handler,
+    .echo_input = false,
+    .wait_for_newline = false
+};
+
 void chall2() {
     is_active = true;
     console_clear();
-    console_push_handler(chall2_input_handler);
+    console_push_handler(console_handler);
     uart_push_handler(uart_handler);
     console_printf("This vault can only be unlocked via an undocumented proprietary USB protocol. Press CTRL+C to exit.");
 }
