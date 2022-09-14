@@ -140,3 +140,5 @@ with serial.Serial(sys.argv[1], 115200, timeout=1) as port:
 	while True:
 		print(port.read(1024))
 ```
+
+With some creativity this challenge could be wrangled to dump the other challenge's flags too. Since the effort to do this blindly was in our view comparable to actually doing the other challenges, it was deliberately kept in. It was amazing to see a few teams cleverly making use of this trick to get all flags at once. Well done!
